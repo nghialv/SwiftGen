@@ -10,13 +10,14 @@ public final class SwiftGenL10nEnumBuilder {
     }
 
     // Localizable.strings files are generally UTF16, not UTF8!
-    public func parseLocalizableStringsFile(path: String, encoding: UInt = NSUTF16StringEncoding) throws {
-        let fileContent = try NSString(contentsOfFile: path, encoding: encoding)
-        let lines = fileContent.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet())
-
-        for case let entry? in lines.map(Entry.init) {
-            addEntry(entry)
-        }
+    public func parseLocalizableStringsFile(path: String) throws {
+		if let dict = NSDictionary(contentsOfFile: path) as? [String: String] {
+			for (key, value) in dict {
+				addEntry(Entry(key: key, value: value))
+			}
+			return
+		}
+		throw NSError(domain: "SwiftGen", code: -1, userInfo: nil)
     }
     
     public func build(enumName enumName : String = "L10n", indentation indent : SwiftGenIndentation = .Spaces(4)) -> String {
@@ -112,24 +113,11 @@ public final class SwiftGenL10nEnumBuilder {
             self.key = key
             self.types = types
         }
-        
-        private static var regex = {
-            return try! NSRegularExpression(pattern: "^\"([^\"]+)\"[ \t]*=[ \t]*\"(.*)\"[ \t]*;", options: [])
-        }()
-        
-        init?(line: String) {
-            let range = NSRange(location: 0, length: (line as NSString).length)
-            if let match = Entry.regex.firstMatchInString(line, options: [], range: range) {
-                let key = (line as NSString).substringWithRange(match.rangeAtIndex(1))
-                
-                let translation = (line as NSString).substringWithRange(match.rangeAtIndex(2))
-                let types = SwiftGenL10nEnumBuilder.typesFromFormatString(translation)
-                
-                self = Entry(key: key, types: types)
-            } else {
-                return nil
-            }
-        }
+		
+		init(key: String, value: String) {
+			self.key = key
+			self.types = SwiftGenL10nEnumBuilder.typesFromFormatString(value)
+		}
     }
     
     
