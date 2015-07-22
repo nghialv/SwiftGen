@@ -23,7 +23,9 @@ public final class SwiftGenL10nEnumBuilder {
     public func build(enumName enumName : String = "L10n", indentation indent : SwiftGenIndentation = .Spaces(4)) -> String {
         var text = "// Generated using SwiftGen, by O.Halligon — https://github.com/AliSoftware/SwiftGen\n\n"
         let t = indent.string
-        
+		
+		text += "import Foundation\n"
+		
         text += "enum \(enumName.asSwiftIdentifier()) {\n"
         
         for entry in parsedLines {
@@ -37,7 +39,7 @@ public final class SwiftGenL10nEnumBuilder {
         
         text += "}\n\n"
         
-        text += "extension \(enumName.asSwiftIdentifier()) : CustomStringConvertible {\n"
+        text += "extension \(enumName.asSwiftIdentifier()) : Printable {\n"
         
         text += "\(t)var description : String { return self.string }\n\n"
         
